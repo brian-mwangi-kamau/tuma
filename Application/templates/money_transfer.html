@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<head>
+    <title>Send Money</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/money_transfer.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+</head>
+<body>
+    <div class="form-container">
+        <div class="back-icon">
+            <a href="{% url 'dashboard' %}"><h3>Back</h3></a>
+        </div>
+        <div class="header">
+            <h1>Make It Rain!</h1>
+            <p>send instantly</p>
+        </div>
+        <div class="form">
+            <form method="post" name="moneyTransferForm">
+                {% csrf_token %}
+                <div class="form-field">
+                    <label for="{{ form.account_number.id_for_label }}">Account Number:</label>
+                    <div class="field" id="id_account_number">{{ form.account_number }}</div>
+                </div>
+                <div class="form-field">
+                    <label for="{{ form.amount.id_for_label }}" class="amount">Amount:</label>
+                    <div class="field" id="id_amount">{{ form.amount }}</div>
+                </div>
+                <button type="submit" id="send-money">Send</button>
+            </form>
+        </div>
+
+
+        <!-- <div class="header2">
+            <p>schedule transaction</p>
+        </div>
+        <div class="form">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-field">
+                    <label for="{{ form.account_number.id_for_label }}">Account Number:</label>
+                    <div class="field">{{ form.account_number }}</div>
+                </div>
+                <div class="form-field">
+                    <label for="{{ form.amount.id_for_label }}" class="amount">Amount:</label>
+                    <div class="field">{{ form.amount }}</div>
+                </div>
+                <div class="form-field">
+                    <label for="{{ form.send_in.id_for_label }}" class="amount">Send In:</label>
+                    <div class="field">{{ form.send_in }}</div>
+                </div>
+            </form>
+            <button type="submit">Schedule</button>
+        </div> -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+    const moneyTransferForm = document.getElementById('money-transfer-form');
+
+    if (moneyTransferForm) {
+        moneyTransferForm.addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Serialize the form data to JSON
+            const formData = {
+                account_number: moneyTransferForm.querySelector('#id_account_number').value,
+                amount: moneyTransferForm.querySelector('#id_amount').value,
+                csrfmiddlewaretoken: getCookie('csrftoken'), // Include CSRF token
+            };
+
+            fetch('/transfer/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => {
+                if (response.ok) {
+                    // If the transfer was successful, you can handle the response here
+                    console.log('Money transfer successful');
+                } else {
+                    // Handle any errors here
+                    console.error('Money transfer failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    }
+
+    // Function to get the CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Check if this cookie name begins with the required name
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+
+    </script>
+
+
+</body>
+</html>

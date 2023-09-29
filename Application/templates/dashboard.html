@@ -1,0 +1,227 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}?v=1.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" integrity="sha512-W/zrbCncQnky/EzL+/AYwTtosvrM+YG/V6piQLSe2HuKS6cmbw89kjYkp3tWFn1dkWV7L1ruvJyKbLz73Vlgfg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Croissant+One&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <!-- The navbar -->
+        <div class="top-bar">
+            <div class="site-name">
+                <h3>tuma</h3>
+            </div>
+
+            <div class="date" id="date"></div>
+            <div class="day-or-night-icon" id="day-night-icon"></div>
+        </div>
+
+        <!-- The Container holding User balances -->
+        <div class="user-info">
+            <h2>{{ first_name }} {{ last_name }}</h2>
+            <p class="small-p">Account Number: {{ account_number }}</p>
+            <div class="balance-cards">
+                <div class="balance-card">
+                    <p>Ksh. {{ balance_cash }}</p>
+                    <!-- <i class="fa-solid fa-square-plus"></i>-->
+                </div>
+                <div class="balance-card">
+                    <p>{{ points }} points</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Options and Icons to send money, withdraw, etc-->
+        <div class="transaction-choices">
+            <div class="icons">
+                <div class="deposit">
+                    <a href=""><i class="fa-solid fa-download"></i></a>
+                </div>
+                <div class="send">
+                    <a href="{% url 'money_transfer' %}"><i class="fa-solid fa-money-bill-transfer"></i></a>
+                </div>
+                <div class="donate">
+                    <a href=""><i class="fa-solid fa-money-bill-trend-up"></i></a>
+                </div>
+                <div class="withdraw">
+                    <a href=""><i class="fa-solid fa-share-from-square"></i></a>
+                </div>
+            </div>
+            <div class="icons-text">
+                <p class="deposit-text">Deposit</p>
+                <p class="send-text">Send</p>
+                <p class="donate-text">Donate</p>
+                <p class="withdraw-text">Withdraw</p>
+            </div>
+        </div>
+
+
+        <!-- Transactions History below -->
+        <div class="transaction-history">
+            <div class="heading">
+                <h1>Your transactions</h1>
+            </div>
+            {% if user_transactions %}
+            <ul class="transactions-list">
+                {% for transaction in user_transactions %}
+                    <li {% if forloop.counter > 2 %}style="display: none;"{% endif %}>
+                        <div class="transaction-info">
+                            <div class="transaction-type">
+                                {% if transaction.transaction_type == 'send' %}
+                                    Sent: Ksh.{{ transaction.amount }}
+                                {% else %}
+                                    Received: Ksh.{{ transaction.amount }}
+                                {% endif %}
+                            </div>
+                            <div class="transaction-party">
+                                {% if transaction.transaction_type == 'receive' %}
+                                    From: {{ transaction.sender.first_name }} {{ transaction.sender.last_name }}<br>
+                                    A/C No: {{ transaction.sender.account_number }}
+                                {% else %}
+                                    To: {{ transaction.recipient.first_name }} {{ transaction.recipient.last_name }}<br>
+                                    A/C No: {{ transaction.recipient.account_number }}
+                                {% endif %}
+                            </div>
+                            <div class="timestamp">
+                                on: {{ transaction.timestamp }}
+                            </div>
+                        </div>
+                    </li>
+                    {% if forloop.counter > 2 %}
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+            <div class="no-data">
+                <p>No transactions to display</p>
+            </div>
+            {% endif %}
+            </ul>
+            {% if user_transactions|length > 3 %}
+                <a href="#" class="see-all-link">See All</a>
+            {% endif %}
+        </div>
+
+        <div id="additional-transactions" style="display: none;">
+            <ul class="transactions-list">
+                {% for transaction in user_transactions|slice:"3:"%}
+                    <li>
+                        <div class="transaction-info">
+                            <div class="transaction-type">
+                                {% if transaction.transaction_type == 'send' %}
+                                    Sent: Ksh.{{ transaction.amount }}
+                                {% else %}
+                                    Received: Ksh.{{ transaction.amount }}
+                                {% endif %}
+                            </div>
+                            <div class="transaction-party">
+                                {% if transaction.transaction_type == 'receive' %}
+                                    From: {{ transaction.sender.first_name }} {{ transaction.sender.last_name }}<br>
+                                    A/C No: {{ transaction.sender.account_number}}
+                                {% else %}
+                                    To: {{ transaction.recipient.first_name }} {{ transaction.recipient.last_name }}<br>
+                                    A/C No: {{ transaction.recipient.account_number }}
+                                {% endif %}
+                            </div>
+                            <div class="timestamp">
+                                on: {{ transaction.timestamp }}
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Open charities where users can donate -->
+        <div class="charities-section" id="charities">
+            <div class="charities-section-heading">
+                <h1>Open Charities</h1>
+            </div>
+            <div class="charities-list">
+                <ul>
+                    {% if available_charities %}
+                        {% for donation in available_charities %}
+                            <li>
+                                <p>Charity Name: {{ donation.name }}</p>
+                                <p>Description: {{ donation.description }}</p>
+                                <img src="{{ charity.photo.url }}" alt="{{ charity.photo }}" width="100">
+                                <p>Goal Amount: {{ donation.goal_amount }}</p>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                    <div class="no-data">
+                        <p style="text-align: center;">This section is in development</p>
+                        <!-- <p style="text-align: center;">No Charities to display</p> -->
+                    </div>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- The fixed-floating bottom navigation bar -->
+        <div class="floating-bar">
+            <div class="icons">
+                <div class="icon" data-tooltip="page1">
+                    <a href="{% url 'dashboard' %}"><i class="fa-solid fa-house"></i></a>
+                </div>
+                <div class="icon" data-tooltip="page2">
+                    <a href="{% url 'trading' %}"><i class="fa-solid fa-arrow-trend-up"></i></a>
+                </div>
+                <div class="icon" data-tooltip="page3">
+                    <a href=""><i class="fa-solid fa-bell"></i></a>
+                </div>
+                <div class="icon" data-tooltip="page4">
+                    <a href="{% url 'profile_settings' %}"><i class="fa-solid fa-user-gear"></i></a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const seeAllLink = document.getElementById('see-all-link');
+        const additionalTransactions = document.getElementById('additional-transactions');
+    
+        seeAllLink.addEventListener('click', function (event) {
+            event.preventDefault();
+            additionalTransactions.style.display = 'block';
+            seeAllLink.style.display = 'none';
+        });
+    </script>
+
+    <script>
+        function updateDayNight() {
+            const now = new Date();
+            const hour = now.getHours();
+    
+            const dayNightIcon = document.getElementById('day-night-icon');
+            const dateElement = document.getElementById('date');
+    
+            if (hour >= 6 && hour < 18) {
+                dayNightIcon.innerText = '🌞';
+                dateElement.innerText = formatDate(now);
+            } else {
+                dayNightIcon.innerText = '🌚';
+                dateElement.innerText = formatDate(now);
+            }
+        }
+    
+        function formatDate(date) {
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${day}/${month}`;
+        }
+    
+        updateDayNight();
+        setInterval(updateDayNight, 60000);
+    </script>
+    
+
+</body>
+</html>

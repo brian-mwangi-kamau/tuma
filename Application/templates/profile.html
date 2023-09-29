@@ -1,0 +1,121 @@
+{% load static %}
+<html>
+    <head>
+        <title>Profile</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'css/profile.css' %}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" integrity="sha512-W/zrbCncQnky/EzL+/AYwTtosvrM+YG/V6piQLSe2HuKS6cmbw89kjYkp3tWFn1dkWV7L1ruvJyKbLz73Vlgfg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Croissant+One&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container">
+
+            <!-- The navbar -->
+            <div class="top-bar">
+                <div class="back-icon">
+                    <a href="{% url 'dashboard' %}"><h3>Back</h3></a>
+                </div>
+            </div>
+
+            <!-- Change language -->
+            <div class="change-language">
+                <form method="POST" action="{% url 'dashboard' %}" class="language-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="language"><p>Change language:</p></label>
+                        <select id="language" name="language" class="custom-select">
+                            <option value="english">English</option>
+                            <option value="spanish">Spanish</option>
+                            <option value="french">French</option>
+                            <option value="german">German</option>
+                            <option value="italian">Italian</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-save">Save</button>
+                </form>
+            </div>          
+
+            <!-- Change currency -->
+            <div class="change-currency">
+                <form method="POST" action="{% url 'dashboard' %}" class="currency-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="currency"><p>Change currency:</p></label>
+                        <select id="currency" name="currency" class="custom-select">
+                            <option value="kenyan_shillings">KES</option>
+                            <option value="dollar">Dollar</option>
+                            <option value="euro">Euro</option>
+                            <option value="pound">Pound</option>
+                            <option value="tanzanian_shillings">TZsh</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-save">Save</button>
+                </form>
+            </div> 
+            <!-- contact the developer -->
+
+            <!-- Log-out feature -->
+            <div class="danger-zone">
+                <p><i class="fa-solid fa-triangle-exclamation"></i> Danger zone</p>
+                <div class="log-out">
+                    <button type="button" id="logout-button" class="btn-submit">Log out</button>
+
+                    <div class="delete-acount">
+                        <p>Delete my account completely</p>
+                        <button type="button" id="delete-acount" class="btn-delete">Delete account</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const logoutButton = document.getElementById('logout-button');
+        
+                if (logoutButton) {
+                    logoutButton.addEventListener('click', function () {
+                        fetch('/logout/', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken'), // Include CSRF token
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    // If the logout was successful, redirect to the login page
+                                    window.location.href = '/login/';
+                                } else {
+                                    // Handle any errors here
+                                    console.error('Logout failed');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                    });
+                }
+        
+                // Function to get the CSRF token from cookies
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            // Check if this cookie name begins with the required name
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+            });
+        </script>
+        
+    </body>
+</html>
